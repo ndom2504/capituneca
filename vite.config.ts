@@ -14,6 +14,7 @@ export default defineConfig(({ mode }) => {
     const firebaseMessagingSenderId = env.VITE_FIREBASE_MESSAGING_SENDER_ID || env.FIREBASE_MESSAGING_SENDER_ID;
     const firebaseAppId = env.VITE_FIREBASE_APP_ID || env.FIREBASE_APP_ID;
     const firebaseMeasurementId = env.VITE_FIREBASE_MEASUREMENT_ID || env.FIREBASE_MEASUREMENT_ID;
+    const geminiApiKey = env.VITE_GEMINI_API_KEY || env.GEMINI_API_KEY;
 
     return {
       server: {
@@ -22,8 +23,9 @@ export default defineConfig(({ mode }) => {
       },
       plugins: [react()],
       define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.API_KEY': JSON.stringify(geminiApiKey),
+        'process.env.GEMINI_API_KEY': JSON.stringify(geminiApiKey),
+        'import.meta.env.VITE_GEMINI_API_KEY': JSON.stringify(geminiApiKey),
         'process.env.FIREBASE_API_KEY': JSON.stringify(firebaseApiKey),
         'process.env.FIREBASE_AUTH_DOMAIN': JSON.stringify(firebaseAuthDomain),
         'process.env.FIREBASE_PROJECT_ID': JSON.stringify(firebaseProjectId),
