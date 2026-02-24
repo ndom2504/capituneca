@@ -71,6 +71,16 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           }
         }
         if (authMode === 'signup') {
+          if (!email || !password) {
+            setError('Email et mot de passe requis.');
+            return;
+          }
+
+          if (password.length < 6) {
+            setError('Mot de passe trop court (minimum 6 caractères).');
+            return;
+          }
+
           await authService.signupWithEmail(email, password, selectedRole!);
           setSuccessMessage("Compte créé. Vous pouvez continuer.");
           return;
@@ -91,19 +101,24 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         'auth/api-key-expired': 'Clé API Firebase expirée (à renouveler dans Google Cloud / Firebase).',
         'auth/invalid-api-key': 'Clé API Firebase invalide (vérifiez la configuration).',
         'auth/api-key-invalid': 'Clé API Firebase invalide (vérifiez la configuration).',
+        'auth/operation-not-allowed': 'Méthode Email/Mot de passe désactivée dans Firebase Auth (activez-la dans Sign-in method).',
+        'auth/configuration-not-found': 'Configuration Firebase Auth incomplète ou introuvable.',
         'auth/email-already-in-use': 'Un compte existe déjà avec cet email.',
         'auth/invalid-email': 'Email invalide.',
+        'auth/missing-email': 'Email requis.',
+        'auth/missing-password': 'Mot de passe requis.',
         'auth/weak-password': 'Mot de passe trop faible.',
         'auth/invalid-credential': 'Identifiants invalides.',
         'auth/popup-closed-by-user': 'Connexion annulée',
         'auth/cancelled-popup-request': 'Connexion annulée',
         'auth/popup-blocked': 'Pop-up bloquée par le navigateur',
         'auth/network-request-failed': 'Erreur réseau - vérifiez votre connexion',
+        'auth/too-many-requests': 'Trop de tentatives. Réessayez plus tard.',
         'auth/unauthorized-domain': 'Domaine non autorisé',
         'auth/account-exists-with-different-credential': 'Un compte existe déjà avec cet email'
       };
       
-      const errorMessage = errorMessages[err.code] || 'Erreur de connexion. Veuillez réessayer.';
+      const errorMessage = errorMessages[err.code] || err?.message || 'Erreur de connexion. Veuillez réessayer.';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
