@@ -11,7 +11,6 @@ import Events from './pages/Events';
 import Community from './pages/Community';
 import Profile from './pages/Profile';
 import Login from './pages/Login';
-import PublicLanding from './pages/PublicLanding';
 import ProNetwork from './pages/ProNetwork';
 import Admin from './pages/Admin';
 import { UserRole } from './types';
@@ -41,7 +40,6 @@ const App: React.FC = () => {
   const [userRole, setUserRole] = React.useState<UserRole | null>(() => authService.getStoredRole());
   const [userProfile, setUserProfile] = React.useState<any | null>(null);
   const [isInitializing, setIsInitializing] = React.useState(true);
-  const [showLogin, setShowLogin] = React.useState(false);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -123,7 +121,6 @@ const App: React.FC = () => {
 
   const handleLogin = (role: UserRole) => {
     setUserRole(role);
-    setShowLogin(false);
   };
 
   const handleLogout = () => {
@@ -159,9 +156,6 @@ const App: React.FC = () => {
   }
 
   if (!userRole) {
-    if (!showLogin) {
-      return <PublicLanding onOpenLogin={() => setShowLogin(true)} />;
-    }
     return <Login onLogin={handleLogin} />;
   }
 
