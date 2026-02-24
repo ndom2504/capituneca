@@ -1,0 +1,94 @@
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // --- FONCTIONS DE BASE ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    // Récupère le rôle depuis les Custom Claims du jeton d'authentification
+    function getRole() {
+      return request.auth.token.role;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && getRole() == 'ADMIN';
+    }
+    
+    function isPro() {
+      return isSignedIn() && getRole() == 'PROFESSIONNEL';
+    }
+    
+    function isPartner() {
+      return isSignedIn() && getRole() == 'PARTENAIRE';
+    }
+    
+    function isClient() {
+      return isSignedIn() && getRole() == 'PARTICULIER';
+    }
+
+    // --- COLLECTIONS ---
+
+    // Utilisateurs & Profils
+    match /users/{userId} {
+      // Tout le monde connecté peut voir les profils publics (Annuaire)
+      // Un utilisateur peut toujours voir son propre profil complet
+      allow read: if isSignedIn() && (resource.data.isPublic == true || request.auth.uid == userId || isAdmin());
+      
+      // Seul l'utilisateur lui-même ou un admin peut modifier le profil
+      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+    }
+
+    // Dossiers d'immigration
+    match /dossiers/{dossierId} {
+      // Création réservée aux particuliers (clients)
+      allow create: if isClient();
+      
+      // Lecture et mise à jour :
+      // 1. L'admin a tout pouvoir
+      // 2. Le client possède le dossier (clientId)
+      // 3. L'expert est assigné (expertId) ou sollicité (expertRequestedId)
+      allow read, update: if isAdmin() || 
+        (isSignedIn() && (
+          resource.data.clientId == request.auth.uid || 
+          resource.data.expertId == request.auth.uid || 
+          resource.data.expertRequestedId == request.auth.uid
+        ));
+        
+      // Suppression réservée à l'admin ou au propriétaire si le dossier n'est pas encore "En cours"
+      allow delete: if isAdmin() || (isClient() && resource.data.clientId == request.auth.uid && resource.data.status == 'Ouvert');
+    }
+
+    // Événements & Webinaires
+    match /events/{eventId} {
+      // Lecture publique pour les membres
+      allow read: if isSignedIn();
+      
+      // Création/Modification réservée aux rôles institutionnels
+      allow write: if isAdmin() || isPro() || isPartner();
+    }
+
+    // Communauté (Posts)
+    match /community/{postId} {
+      allow read: if isSignedIn();
+      
+      // N'importe quel membre peut publier
+      allow create: if isSignedIn();
+      
+      // Seul l'auteur ou l'admin peut modifier/supprimer
+      allow update, delete: if isAdmin() || (isSignedIn() && resource.data.authorId == request.auth.uid);
+    }
+
+    // Paramètres Système (Settings)
+    match /settings/{docId} {
+      // Lecture autorisée pour le fonctionnement de l'app (taux commission, etc.)
+      allow read: if isSignedIn();
+      
+      // Seul l'admin (Gouvernance) peut modifier la configuration
+      allow write: if isAdmin();
+    }
+  }
+}

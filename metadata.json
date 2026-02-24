@@ -1,0 +1,8 @@
+{
+  "name": "CAPITUNE v3",
+  "description": "Plateforme d'accompagnement pour l'immigration canadienne connectant particuliers et professionnels certifiés (CRIC).",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}
