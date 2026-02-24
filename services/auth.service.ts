@@ -162,6 +162,17 @@ export const authService = {
 
   getCurrentUser: () => auth.currentUser,
 
+  getAccessToken: async (forceRefresh: boolean = false): Promise<string | null> => {
+    const user = auth.currentUser;
+    if (!user) return null;
+    try {
+      return await user.getIdToken(forceRefresh);
+    } catch (error) {
+      console.warn('⚠️ Impossible de récupérer le token d\'accès:', error);
+      return null;
+    }
+  },
+
   resolveRoleAfterAuth: async (roleFallback?: UserRole): Promise<UserRole | null> => {
     const user = auth.currentUser;
     if (!user) return null;

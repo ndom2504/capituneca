@@ -3,7 +3,8 @@ import { GoogleGenAI } from "@google/genai";
 import { systemService } from "./system.service";
 
 export const getGeminiResponse = async (prompt: string, history: { role: 'user' | 'model', parts: { text: string }[] }[]) => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY as string });
+  const apiKey = (import.meta.env.VITE_GEMINI_API_KEY || process.env.API_KEY) as string;
+  const ai = new GoogleGenAI({ apiKey });
   
   try {
     // Récupérer l'instruction système depuis Firestore (Admin Config)
